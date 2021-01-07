@@ -1,34 +1,96 @@
 console.log("Welcome to Shelf Manager: A books management tool!");
 
-// Display constructor
-function Display() {
-
-}
-Display.prototype.getBookCount = function () {
-    let totalBookCount = document.getElementById("totalBookCount");
-    let bookObjArr;
-    let savedBooks = localStorage.getItem("savedBooks");
-    if (savedBooks == null) {
-        bookObjArr = [];
-    }
-    else {
-        bookObjArr = JSON.parse(savedBooks);
-    }
-    if (bookObjArr.length == 0) {
-        totalBookCount.innerText = 0;
-    }
-    else {
-        totalBookCount.innerText = bookObjArr.length;
+// For book objects 
+class Book {
+    constructor(name, author, type) {
+        this.name = name;
+        this.author = author;
+        this.type = type;
     }
 }
 
-// Book constructor
-function Book(name, author, type) {
-    this.name = name;
-    this.author = author;
-    this.type = type;
-}
+class Display {
 
+    // Tells how many books are there in the shelf
+    getBookCount() {
+        this.totalBookCount = document.getElementById("totalBookCount");
+        this.bookObjArr;
+        this.savedBooks = localStorage.getItem("savedBooks");
+        if (this.savedBooks == null) {
+            this.bookObjArr = [];
+        }
+        else {
+            this.bookObjArr = JSON.parse(this.savedBooks);
+        }
+        if (this.bookObjArr.length == 0) {
+            this.totalBookCount.innerText = 0;
+        }
+        else {
+            this.totalBookCount.innerText = this.bookObjArr.length;
+        }
+    }
+
+    // Saves books to the local storage
+    addTobooks(bookObj) {
+        this.bookObj = bookObj;
+        this.bookObjArr;
+        this.savedBooks = localStorage.getItem("savedBooks");
+        if (this.savedBooks == null) {
+            this.bookObjArr = [];
+        }
+        else {
+            this.bookObjArr = JSON.parse(this.savedBooks);
+        }
+        this.bookObjArr.push(this.bookObj);
+        localStorage.setItem("savedBooks", JSON.stringify(this.bookObjArr));
+        this.getBookCount();
+        showBooks();
+    }
+
+    // Clears form feilds
+    clear() {
+        this.bookForm = document.getElementById("bookForm");
+        this.bookForm.reset();
+    }
+
+    // Validates the data -> Title and Author
+    validateData(name, author) {
+        this.name = name;
+        this.author = author;
+
+        if (this.isAlphanumeric(this.author)) {
+            showMessage("invalidAuthor");
+        }
+
+        else if (this.name.trim().length < 3 || this.author.trim().length < 3) {
+            showMessage("invalid")
+        }
+        else {
+            showMessage("added");
+
+            this.bookType = document.getElementById("bookTypes");
+            this.type = this.bookType.options[this.bookType.selectedIndex].text;
+            this.bookObj = new Book(this.name, this.author, this.type);
+
+            this.addTobooks(this.bookObj);
+            this.clear();
+        }
+    }
+
+    // Validates for the author name if it contains numbers/special characters or not 
+    isAlphanumeric = function (name) {
+        for (let index = 0; index < name.length; index++) {
+            if (name.charCodeAt(index) < 65 || (name.charCodeAt(index) > 90 && name.charCodeAt(index) < 97 && name.charCodeAt(index) > 122)) {
+                if (name.charCodeAt(index) === 32) {
+                    continue;
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+}
 showBooks();
 
 // Shows all the boooks 
@@ -122,62 +184,6 @@ function showMessage(params) {
     }, 5500);
 }
 
-// Saves books to the local storage
-Display.prototype.addTobooks = function (bookObj) {
-    let bookObjArr;
-    let savedBooks = localStorage.getItem("savedBooks");
-    if (savedBooks == null) {
-        bookObjArr = [];
-    }
-    else {
-        bookObjArr = JSON.parse(savedBooks);
-    }
-    bookObjArr.push(bookObj);
-    localStorage.setItem("savedBooks", JSON.stringify(bookObjArr));
-    this.getBookCount();
-    showBooks();
-}
-
-// Clears form feilds
-Display.prototype.clear = function () {
-    let bookForm = document.getElementById("bookForm");
-    bookForm.reset();
-}
-
-// Validates the data -> Title and Author
-Display.prototype.validateData = function (name, author) {
-
-    if (this.isAlphanumeric(author)) {
-        showMessage("invalidAuthor");
-    }
-
-    else if (name.trim().length < 3 || author.trim().length < 3) {
-        showMessage("invalid")
-    }
-    else {
-        showMessage("added");
-
-        let bookType = document.getElementById("bookTypes");
-        let type = bookType.options[bookType.selectedIndex].text;
-        bookObj = new Book(name, author, type);
-
-        this.addTobooks(bookObj);
-        this.clear();
-    }
-}
-
-// Validates for the author name if it contains numbers/special characters or not 
-Display.prototype.isAlphanumeric = function (name) {
-    for (let index = 0; index < name.length; index++) {
-        if (name.charCodeAt(index) < 65 || (name.charCodeAt(index) > 90 && name.charCodeAt(index) < 97 && name.charCodeAt(index) > 122)) {
-            if (name.charCodeAt(index) === 32) {
-                continue;
-            }
-            return true;
-        }
-    }
-    return false;
-}
 
 //Event listening on Add book
 let bookForm = document.getElementById("bookForm");
@@ -300,7 +306,7 @@ function searchBooksBy(e) {
     e.preventDefault();
 }
 
-// Delte book event listner and message
+// confirmination of delete book, event listner and message alert
 let delBook = document.getElementById("delBook");
 delBook.addEventListener("click", () => {
     showMessage("deleteBook");
